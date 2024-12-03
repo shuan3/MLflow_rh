@@ -1,0 +1,15 @@
+artifact_uri: file:///d:/Github/MLflow_rh/mlruns/953928408009338699/0524a130c38a4bcf9ab08c00b2374102/artifacts
+end_time: 1733245315357
+entry_point_name: ''
+experiment_id: '953928408009338699'
+lifecycle_stage: active
+run_id: 0524a130c38a4bcf9ab08c00b2374102
+run_name: righteous-kit-747
+run_uuid: 0524a130c38a4bcf9ab08c00b2374102
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1733245302464
+status: 3
+tags: []
+user_id: shanh
