@@ -21,10 +21,40 @@ def eval_metrics(actual,pred):
     r2=r2_score(actual,pred)
     return rmse,mae,r2
 
+
+
+
+def run_experiment(n):
+    for i in range(n):
+        with mlflow.start_run(experiment_id=exp.experiment_id):
+        # with mlflow.start_run(run_id="85cff207e28741b187b06ca725d6252a"):
+            alpha=0.1*i
+            l1_ratio=0.1*i
+            lr=ElasticNet(alpha=alpha,l1_ratio=l1_ratio,random_state=42)
+            lr.fit(train_x,train_y)
+            predicted_qualities=lr.predict(test_x)
+
+            (rmse,mae,r2)=eval_metrics(test_y,predicted_qualities)
+
+            print("Elasticnet model (alpha={:f},l1_ratio={:f}):".format(alpha,l1_ratio))
+            print(" RMSE: %s" % rmse)
+            print(" MAE: %s" % mae)
+            print(" R2: %s" % r2)
+            params={"alpah":alpha,"l1_ratio":l1_ratio}
+            mlflow.log_params(params)
+            # mlflow.log_param("alpha",alpha)
+            # mlflow.log_param("l1_ratio",l1_ratio)
+            mlflow.log_metric("RMSE",rmse)
+            mlflow.log_metric("r2",r2)
+            mlflow.log_metric("MAE",mae)
+            mlflow.sklearn.log_model(lr,f"RayFirstModel_{n}")
+
+            print("active run is {}".format(mlflow.active_run()))
+
 if __name__=="__main__":
     warnings.filterwarnings("ignore")
     np.random.seed(40)
-    data=pd.read_csv(r"D:\Github\MLflow_rh\mlflow_demo_1\winequality.csv")
+    data=pd.read_csv(r"D:\Github\MLflow_rh\Data\winequality.csv")
     print(data.shape[0])
     print(data.columns)
     # print(data['quality'])
@@ -37,62 +67,18 @@ if __name__=="__main__":
 
     alpha=args.alpha
     l1_ratio=args.l1_ratio
+    exp=mlflow.set_experiment(experiment_name="experiment_2")
+    run_experiment(9)
 
 
-#mlflow.set_tracking_uri(uri="")
-#print(mlflow.get_tracking_uri())
-
-# '''
-
-# start experiment
-#mlflow ui
-#python -u "d:\Github\MLflow_rh\mlflow_demo_1\basic_ml_code.py" --alpha 0.3 --l1_ratio 0.1
-#git rm -r --cached .
-# '''
-    exp=mlflow.set_experiment(experiment_name="experiment_1")
-    with mlflow.start_run(experiment_id=exp.experiment_id):
-
-        lr=ElasticNet(alpha=alpha,l1_ratio=l1_ratio,random_state=42)
-        lr.fit(train_x,train_y)
-        predicted_qualities=lr.predict(test_x)
-
-        (rmse,mae,r2)=eval_metrics(test_y,predicted_qualities)
-
-        print("Elasticnet model (alpha={:f},l1_ratio={:f}):".format(alpha,l1_ratio))
-        print(" RMSE: %s" % rmse)
-        print(" MAE: %s" % mae)
-        print(" R2: %s" % r2)
-    
-    mlflow.log_param("alpha",alpha)
-    mlflow.log_param("l1_ratio",l1_ratio)
-    mlflow.log_metric("RMSE",rmse)
-    mlflow.log_metric("r2",r2)
-    mlflow.log_metric("MAE",mae)
-    mlflow.sklearn.log_model(lr,"RayFirstModel")
 
 
-    # exp_id=mlflow.create_experiment(name="create_experiment",tags={"version":"v1","priority":"p1"})
-    # get_exp=mlflow.get_experiment(exp_id)
-    # print("Createing location: {}".format(get_exp.artifact_location))
-    # with mlflow.start_run(experiment_id=exp_id):
 
-    #     lr=ElasticNet(alpha=alpha,l1_ratio=l1_ratio,random_state=42)
-    #     lr.fit(train_x,train_y)
-    #     predicted_qualities=lr.predict(test_x)
+'''
+mlflow.start_run()
+mlflow.end_run()
+'''
 
-    #     (rmse,mae,r2)=eval_metrics(test_y,predicted_qualities)
-
-    #     print("Elasticnet model (alpha={:f},l1_ratio={:f}):".format(alpha,l1_ratio))
-    #     print(" RMSE: %s" % rmse)
-    #     print(" MAE: %s" % mae)
-    #     print(" R2: %s" % r2)
-    
-    #     mlflow.log_param("alpha",alpha)
-    #     mlflow.log_param("l1_ratio",l1_ratio)
-    #     mlflow.log_metric("RMSE",rmse)
-    #     mlflow.log_metric("r2",r2)
-    #     mlflow.log_metric("MAE",mae)
-    #     mlflow.sklearn.log_model(lr,"RayFirstModel")
 
 
 
