@@ -27,3 +27,31 @@ scenario 4
 localhost - > remote host - > remote host (postgreSQL) 
 |
 S3 remote host
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Auto logging
+mlflow.autolog()
+enable auto-logging for each supported library that is installed
+
+Parameters
+log_models
+log_input_examples
+log_model_signatures
+log_dataset
+disable
+exclusuve
+
+mlflow.<lib>.autolog()
+use library-specific mlflow auto-logging functions.
