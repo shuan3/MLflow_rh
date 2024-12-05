@@ -75,13 +75,77 @@ if __name__=="__main__":
         print(" RMSE: %s" % rmse)
         print(" MAE: %s" % mae)
         print(" R2: %s" % r2)
-    
+
         mlflow.log_param("alpha",alpha)
         mlflow.log_param("l1_ratio",l1_ratio)
         mlflow.log_metric("RMSE",rmse)
         mlflow.log_metric("r2",r2)
         mlflow.log_metric("MAE",mae)
-        mlflow.sklearn.log_model(lr,"RayFirstModel")
+        sk_model_path="sklearn_model.pkl"
+        joblib.dump(lr,sk_model_path)
+        
+        data_dir="test"
+        if not os.path.exists(data_dir):
+            os.makedirs(data_dir)
+        data.to_csv(data_dir+'/data.csv')
+        train.to_csv(data_dir+'/train.csv')
+        test.to_csv(data_dir+'/test.csv')
+
+        class SklearnWrapper(mlflow.pyfunc.PythonModel):
+            def load_context(self,context):
+                self.sklearn_model=joblib.load(context.artifacts["sklearn_model"])
+            def predict(self,context,model_input):
+                return self.sklearn_model.predict(model_input.values)
+
+        artifacts={
+            "sklearn_model":sk_model_path,
+            "data":data_dir
+        }
+
+        conda_env={
+            "channels":["defaults"],
+            "dependencies":[
+                "python={}".format(3.12),
+                "pip",
+                {"pip":["mlflow=={}".format(mlflow.__version__),
+                        "sklearn=={}".format(sklearn.__version__),
+                        "cloudpickle=={}".format(cloudpickle.__version__),
+
+                ]},
+            ],
+            "name":"sklearn_env"
+        }
+
+        mlflow.pyfunc.log_model(artifact_path="sklean_mlflow_pyfunc",python_model=SklearnWrapper(),artifacts=artifacts,code_path=[r"D:\Github\MLflow_rh\MLflowModelRegistration\customerized_pythonmodel.py"],conda_env=conda_env)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        # mlflow.log_param("alpha",alpha)
+        # mlflow.log_param("l1_ratio",l1_ratio)
+        # mlflow.log_metric("RMSE",rmse)
+        # mlflow.log_metric("r2",r2)
+        # mlflow.log_metric("MAE",mae)
+        # mlflow.sklearn.log_model(lr,"RayFirstModel")
 
         def squared_diff_plus_one(eval_df,_builtin_metrices):
             return np.sum(np.abs(eval_df["prediction"]-eval_df["target"]+1)**2)
@@ -107,10 +171,14 @@ if __name__=="__main__":
         baseline_model=DummyRegressor()
         baseline_model.fit(train_x,train_y)
         baseline_predicted_qualities=baseline_model.predict(test_x)
-
+       
         
         (b1_rmse,b1_mae,b1_r2)=eval_metrics(test_y,baseline_predicted_qualities)
-
+        mlflow.log_metrics({
+            "Baseline rmse":b1_rmse,
+            "Baseline r2":b1_r2,
+            "Baseline mae":b1_mae,
+        })
         print(" RMSE: %s" % b1_rmse)
         print(" MAE: %s" % b1_mae)
         print(" R2: %s" % b1_r2)
@@ -160,7 +228,8 @@ if __name__=="__main__":
         }
         baseline_model_uri=mlflow.get_artifact_uri("baseline_sklean_mlflow_pyfunc")
         #artifacts_uri="file:///d:/Github/MLflow_rh/mlruns/721023801212034524/ba69e959dfa7440d8c715dce2c8e37c4/artifacts"
-        artifacts_uri=mlflow.get_artifact_uri("RayFirstModel")
+        artifacts_uri=mlflow.get_artifact_uri("sklean_mlflow_pyfunc")
+        #RayFirstModel
         mlflow.evaluate(
             artifacts_uri,
             test,
@@ -174,7 +243,7 @@ if __name__=="__main__":
             ],
             custom_artifacts=[prediction_target_scatter],
             validation_thresholds=thresholds,
-            baseline_model=baseline_model_uri
+            baseline_model=baseline_model_uri,
         )
 
 
