@@ -219,7 +219,7 @@ if __name__=="__main__":
 
        #define threshold
         thresholds={
-            "mean_square_error":MetricThreshold(
+            "mean_square_error1":MetricThreshold(
                 threshold=0.6,
                 min_absolute_change=0.1,
                 min_relative_change=0.05,
@@ -243,7 +243,8 @@ if __name__=="__main__":
             ],
             custom_artifacts=[prediction_target_scatter],
             validation_thresholds=thresholds,
-            baseline_model=baseline_model_uri,
+            # baseline_model=baseline_model_uri
+            #baseline_model_uri,
         )
 
 
