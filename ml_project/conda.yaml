@@ -1,0 +1,4 @@
+name: mlflow_demo1
+channels:
+  - defaults
+prefix: C:\Users\shanh\anaconda3\envs\mlflow_demo1
